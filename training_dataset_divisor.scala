@@ -46,7 +46,7 @@ def writeLines(datasetName:String, users:Array[String], lines:Array[String]):Uni
 }
 
 def getUserByLine(line:String):String = {
-  val features = line.split("\\|");
-  val fields = features(1).split(" ")
-  fields(1)
+  val columns = line.split("\t");
+  val fields = columns(3).split(" ")
+  fields(0)
 }
