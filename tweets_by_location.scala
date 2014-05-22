@@ -22,12 +22,12 @@ def getBoundingBoxes(root: Elem): List[List[(Double, Double)]] = {
     val ne_long = (b \ "ne" \ "longitude").text
     val ne_lat = (b \ "ne" \ "latitude").text
 
-    boundingBoxes += List((sw_long.toDouble, sw_lat.toDouble), (ne_long.toDouble, ne_lat.toDouble))
+    boundingBoxes += List((sw_lat.toDouble, sw_long.toDouble), (ne_lat.toDouble, ne_long.toDouble))
   })
   boundingBoxes.toList
 }
 
-def isInBoundingBoxes(longitude: String, latitude: String): Boolean = {
+def isInBoundingBoxes(latitude: String, longitude: String): Boolean = {
   boundingBoxes.foreach(b => {
     val sw = b(0)
     val ne = b(1)
@@ -36,20 +36,22 @@ def isInBoundingBoxes(longitude: String, latitude: String): Boolean = {
   false
 }
 
-def isIncludable(longitude: String, latitude: String): Boolean = {
-  if(mustBeIn) isInBoundingBoxes(longitude, latitude) else !isInBoundingBoxes(longitude, latitude)
+def isIncludable(latitude: String, longitude: String): Boolean = {
+  if(mustBeIn) isInBoundingBoxes(latitude, longitude) else !isInBoundingBoxes(latitude, longitude)
 }
 
 def buildTweet(values: List[String]): String = {
   val tweet =
   <tweet>
-    <username>{values(0)}</username>
-    <location>{values(1)}</location>
-    <timezone>{values(2)}</timezone>
-    <createdAt>{values(3)}</createdAt>
-    <latitude>{values(4)}</latitude>
-    <longitude>{values(5)}</longitude>
-    <text>{values(6)}</text>
+    <id>{values(0)}</id>
+    <username>{values(1)}</username>
+    <name>{values(2)}</name>
+    <location>{values(3)}</location>
+    <timezone>{values(4)}</timezone>
+    <createdAt>{values(5)}</createdAt>
+    <latitude>{values(6)}</latitude>
+    <longitude>{values(7)}</longitude>
+    <text>{values(8)}</text>
   </tweet>
 
   s"\n${tweet.toString}\n"
@@ -57,11 +59,11 @@ def buildTweet(values: List[String]): String = {
 
 def serialize(tweet: String) = { writer.write(tweet) }
 
-// username, location, timezone, createdAt, latitude, longitude, text
+// id, username, name, location, timezone, createdAt, latitude, longitude, text
 def save(values: List[String]) = {
-  val latitude  = values(4)
-  val longitude = values(5)
-  if(isIncludable(longitude, latitude)){
+  val latitude  = values(6)
+  val longitude = values(7)
+  if(isIncludable(latitude, longitude)){
     serialize(buildTweet(values))
   }
 }
@@ -110,7 +112,7 @@ try {
       case EvElemEnd(_, "tweet") =>
       save(values.toList)
       values.clear
-      case EvText(text) if Array("username", "location", "latitude", "longitude", "timezone", "createdAt", "text").contains(current) =>
+      case EvText(text) if Array("id", "username", "name", "location", "latitude", "longitude", "timezone", "createdAt", "text").contains(current) =>
       if(current == last) appendToLastValue(text, values) else values += text
       last = current
       case EvEntityRef("amp") =>
